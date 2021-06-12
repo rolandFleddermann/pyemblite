@@ -6,6 +6,8 @@ import numbers
 cimport rtcore as rtc
 cimport rtcore_ray as rtcr
 cimport rtcore_geometry as rtcg
+cimport rtcore_buffer as rtcb
+from rtcore cimport Vertex, Triangle
 
 
 log = logging.getLogger('pyemblite')
@@ -26,16 +28,22 @@ cdef class TestScene:
         rtcg.rtcReleaseGeometry(mesh)
         rtcReleaseScene(scene)
 
-    def test_geom2(self):
+    def test_geom3(self):
         cdef rtc.EmbreeDevice device = rtc.EmbreeDevice()
         cdef EmbreeScene scene = EmbreeScene(device)
         cdef rtcg.RTCGeometry mesh = rtcg.rtcNewGeometry(scene.device.device, rtcg.RTC_GEOMETRY_TYPE_TRIANGLE)
         rtcg.rtcReleaseGeometry(mesh)
 
-    def test_mesh(self):
+        rtcCommitScene(scene.scene_i)
+        cdef rtc.RTCBounds bnds
+        rtcGetSceneBounds(scene.scene_i, &bnds)
+        print(bnds.lower_x, bnds.lower_y, bnds.lower_z, bnds.upper_x, bnds.upper_y, bnds.upper_z)
+
+    def test_mesh1(self):
         from pyemblite.mesh_construction import TriangleMesh
 
-        triangles = np.asarray((((0.0, 0.0, 0.0), (1.0,0.0,0.0), (1.0, 1.0, 0.0)),))
+        triangles = np.array((((0.0, 0.0, 0.0), (1.0,0.0,0.0), (1.0, 1.0, 0.0)),), dtype=np.float32)
+
         embreeDevice = rtc.EmbreeDevice()
         scene = EmbreeScene(embreeDevice)
         mesh = TriangleMesh(scene, triangles)
@@ -46,7 +54,69 @@ cdef class TestScene:
         del mesh
         del scene
         del embreeDevice
-        
+
+    def test_mesh2(self):
+
+        tri_vertices = np.array((((0.0, 0.0, 0.0), (1.0,0.0,0.0), (1.0, 1.0, 0.0)),), dtype=np.float32)
+
+        embreeDevice = rtc.EmbreeDevice()
+        scene = EmbreeScene(embreeDevice)
+
+        cdef int i, j
+        cdef int nt = tri_vertices.shape[0]
+        # In this scheme, we don't share any vertices.  This leads to cracks,
+        # but also means we have exactly three times as many vertices as
+        # triangles.
+        print("Creating geometry...")
+        cdef rtcg.RTCGeometry mesh = rtcg.rtcNewGeometry(scene.device.device, rtcg.RTC_GEOMETRY_TYPE_TRIANGLE)
+
+        print("Creating vertex buffer...")
+        cdef Vertex * vertices = <Vertex *> rtcg.rtcSetNewGeometryBuffer(
+                mesh,
+                rtcb.RTC_BUFFER_TYPE_VERTEX,
+                0,
+                rtc.RTC_FORMAT_FLOAT3,
+                sizeof(Vertex),
+                nt * 3
+            )
+        print("Assigning vertex buffer...")
+        for i in range(nt):
+            for j in range(3):
+                vertices[i*3 + j].x = tri_vertices[i,j,0]
+                vertices[i*3 + j].y = tri_vertices[i,j,1]
+                vertices[i*3 + j].z = tri_vertices[i,j,2]
+
+        print("Creating index buffer...")
+        cdef Triangle * triangles = <Triangle *> rtcg.rtcSetNewGeometryBuffer(
+                mesh,
+                rtcb.RTC_BUFFER_TYPE_INDEX,
+                0,
+                rtc.RTC_FORMAT_UINT3,
+                sizeof(Triangle),
+                nt
+            )
+
+        print("Assigning index buffer...")
+        for i in range(nt):
+            triangles[i].v0 = i*3 + 0
+            triangles[i].v1 = i*3 + 1
+            triangles[i].v2 = i*3 + 2
+
+        # Commit geometry to the scene
+        print("Committing geometry...")
+        rtcg.rtcCommitGeometry(mesh);
+        print("Attaching geometry...")
+        cdef unsigned int meshID = rtcAttachGeometry(scene.scene_i, mesh)
+        print("meshID=%s" % meshID)
+
+        print("Committing scene...")
+        rtcCommitScene(scene.scene_i)
+        cdef rtc.RTCBounds bnds
+        rtcGetSceneBounds(scene.scene_i, &bnds)
+        print(bnds.lower_x, bnds.lower_y, bnds.lower_z, bnds.upper_x, bnds.upper_y, bnds.upper_z)
+        del scene
+        del embreeDevice
+
 cdef void error_printer(void *userPtr, rtc.RTCError code, const char *_str):
     """
     error_printer function depends on embree version
@@ -66,7 +136,7 @@ cdef class EmbreeScene:
             # We store the embree device inside EmbreeScene to avoid premature deletion
             device = rtc.EmbreeDevice()
         self.device = device 
-        rtc.rtcSetDeviceErrorFunction(device.device, error_printer, NULL)
+        # rtc.rtcSetDeviceErrorFunction(device.device, error_printer, NULL)
         self.scene_i = rtcNewScene(device.device)
         self.is_committed = 0
 

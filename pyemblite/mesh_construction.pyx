@@ -83,7 +83,7 @@ cdef class TriangleMesh:
                 0,
                 rtc.RTC_FORMAT_FLOAT3,
                 sizeof(Vertex),
-                nt
+                nt * 3
             )
         print("Assigning vertex buffer...")
         for i in range(nt):

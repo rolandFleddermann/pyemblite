@@ -59,12 +59,16 @@ class TestPyEmblite(TestCase):
         scene = rtcs.EmbreeScene()
 
 class TestGeometry(TestCase):
-    def test_create1(self):
+    def test_geom1(self):
         rtcs.TestScene().test_geom1()
-    def test_create2(self):
+    def test_geom2(self):
         rtcs.TestScene().test_geom2()
-    def test_mesh(self):
-        rtcs.TestScene().test_mesh()
+    def test_geom3(self):
+        rtcs.TestScene().test_geom3()
+    def test_mesh1(self):
+        rtcs.TestScene().test_mesh1()
+    def test_mesh2(self):
+        rtcs.TestScene().test_mesh2()
 
 
 class TestIntersectionTriangles(TestCase):
