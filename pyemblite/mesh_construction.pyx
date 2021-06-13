@@ -73,10 +73,8 @@ cdef class TriangleMesh:
         # In this scheme, we don't share any vertices.  This leads to cracks,
         # but also means we have exactly three times as many vertices as
         # triangles.
-        print("Creating geometry...")
         cdef rtcg.RTCGeometry mesh = rtcg.rtcNewGeometry(scene.device.device, rtcg.RTC_GEOMETRY_TYPE_TRIANGLE)
 
-        print("Creating vertex buffer...")
         cdef Vertex * vertices = <Vertex *> rtcg.rtcSetNewGeometryBuffer(
                 mesh,
                 rtcb.RTC_BUFFER_TYPE_VERTEX,
@@ -85,14 +83,12 @@ cdef class TriangleMesh:
                 sizeof(Vertex),
                 nt * 3
             )
-        print("Assigning vertex buffer...")
         for i in range(nt):
             for j in range(3):
                 vertices[i*3 + j].x = tri_vertices[i,j,0]
                 vertices[i*3 + j].y = tri_vertices[i,j,1]
                 vertices[i*3 + j].z = tri_vertices[i,j,2]
 
-        print("Creating index buffer...")
         cdef Triangle * triangles = <Triangle *> rtcg.rtcSetNewGeometryBuffer(
                 mesh,
                 rtcb.RTC_BUFFER_TYPE_INDEX,
@@ -102,16 +98,13 @@ cdef class TriangleMesh:
                 nt
             )
 
-        print("Assigning index buffer...")
         for i in range(nt):
             triangles[i].v0 = i*3 + 0
             triangles[i].v1 = i*3 + 1
             triangles[i].v2 = i*3 + 2
 
         # Commit geometry to the scene
-        print("Committing geometry...")
         rtcg.rtcCommitGeometry(mesh);
-        print("Attaching geometry...")
         cdef unsigned int meshID = rtcs.rtcAttachGeometry(scene.scene_i, mesh)
 
         self.vertices = vertices

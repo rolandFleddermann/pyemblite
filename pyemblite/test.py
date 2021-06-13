@@ -59,16 +59,18 @@ class TestPyEmblite(TestCase):
         scene = rtcs.EmbreeScene()
 
 class TestGeometry(TestCase):
+
     def test_geom1(self):
         rtcs.TestScene().test_geom1()
+
     def test_geom2(self):
         rtcs.TestScene().test_geom2()
+
     def test_geom3(self):
         rtcs.TestScene().test_geom3()
+
     def test_mesh1(self):
         rtcs.TestScene().test_mesh1()
-    def test_mesh2(self):
-        rtcs.TestScene().test_mesh2()
 
 
 class TestIntersectionTriangles(TestCase):
@@ -203,5 +205,5 @@ if __name__ == '__main__':
     import logging
     from unittest import main
 
-    initialise_loggers(["pyemblite", __name__,], logging.INFO)
+    initialise_loggers(["pyemblite", __name__,], logging.WARNING)
     main()
