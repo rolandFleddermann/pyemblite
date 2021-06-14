@@ -20,14 +20,13 @@ cdef extern from "embree3/rtcore_scene.h":
     ctypedef struct RTCRayHit8
     ctypedef struct RTCRayHit16
 
-    cdef enum RTCSceneFlags:
-        RTC_SCENE_STATIC
-        RTC_SCENE_DYNAMIC
-        RTC_SCENE_COMPACT
-        RTC_SCENE_COHERENT
-        RTC_SCENE_INCOHERENT
-        RTC_SCENE_HIGH_QUALITY
-        RTC_SCENE_ROBUST
+    # Scene flags
+    cpdef enum RTCSceneFlags:
+        RTC_SCENE_FLAG_NONE
+        RTC_SCENE_FLAG_DYNAMIC
+        RTC_SCENE_FLAG_COMPACT
+        RTC_SCENE_FLAG_ROBUST
+        RTC_SCENE_FLAG_CONTEXT_FILTER_FUNCTION
 
     cdef enum RTCAlgorithmFlags:
         RTC_INTERSECT1
@@ -170,8 +169,10 @@ cdef extern from "embree3/rtcore_scene.h":
     # Performs collision detection of two scenes
     void rtcCollide (RTCScene scene0, RTCScene scene1, RTCCollideFunc callback, void* userPtr)
 
+
 cdef class TestScene:
     pass
+
 
 cdef class EmbreeScene:
     cdef RTCScene scene_i
@@ -179,7 +180,9 @@ cdef class EmbreeScene:
     cdef public int is_committed
     cdef rtc.EmbreeDevice device
 
+
 cdef enum rayQueryType:
-    intersect=1,
-    occluded=2,
-    distance=3
+    intersect,
+    occluded,
+    distance
+

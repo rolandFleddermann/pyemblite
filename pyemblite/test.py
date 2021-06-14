@@ -2,6 +2,7 @@ from unittest import TestCase
 import numpy as np
 from pyemblite import rtcore as rtc
 from pyemblite import rtcore_scene as rtcs
+from pyemblite import test_scene as rtcts
 from pyemblite.mesh_construction import TriangleMesh
 
 
@@ -58,19 +59,47 @@ class TestPyEmblite(TestCase):
 
         scene = rtcs.EmbreeScene()
 
+    def test_pyemblite_scene_flags(self):
+        from pyemblite import rtcore_scene as rtcs
+
+        scene = rtcs.EmbreeScene()
+        # print(dir(rtcs))
+        flags = \
+            (
+                rtcs.RTC_SCENE_FLAG_DYNAMIC
+                |
+                rtcs.RTC_SCENE_FLAG_ROBUST
+            )
+        self.assertNotEqual(flags, scene.get_flags())
+
+        scene.set_flags(flags)
+        self.assertEqual(flags, scene.get_flags())
+
+    def test_pyemblite_scene_build_quality(self):
+        from pyemblite import rtcore_scene as rtcs
+
+        scene = rtcs.EmbreeScene()
+        # print(dir(rtcs))
+        quality = \
+            (
+                rtc.RTC_BUILD_QUALITY_HIGH
+            )
+        scene.set_build_quality(quality)
+
+
 class TestGeometry(TestCase):
 
     def test_geom1(self):
-        rtcs.TestScene().test_geom1()
+        rtcts.TestScene().test_geom1()
 
     def test_geom2(self):
-        rtcs.TestScene().test_geom2()
+        rtcts.TestScene().test_geom2()
 
     def test_geom3(self):
-        rtcs.TestScene().test_geom3()
+        rtcts.TestScene().test_geom3()
 
     def test_mesh1(self):
-        rtcs.TestScene().test_mesh1()
+        rtcts.TestScene().test_mesh1()
 
 
 class TestIntersectionTriangles(TestCase):
@@ -83,8 +112,8 @@ class TestIntersectionTriangles(TestCase):
         self.logger = logging.getLogger(__name__ + ".TestIntersectionTriangles")
 
         self.logger.info("Creating triangle arrays...")
-        triangles = xplane(7.0)
-        triangles = np.array(triangles, 'float32')
+        self.triangles = xplane(7.0)
+        self.triangles = np.array(self.triangles, 'float32')
 
         self.logger.info("Creating device...")
         self.embreeDevice = rtc.EmbreeDevice()
@@ -93,7 +122,7 @@ class TestIntersectionTriangles(TestCase):
         self.scene = rtcs.EmbreeScene(self.embreeDevice)
 
         self.logger.info("Creating mesh...")
-        self.mesh = TriangleMesh(self.scene, triangles)
+        self.mesh = TriangleMesh(self.scene, self.triangles)
         self.logger.info("%s", dir(self.mesh))
 
         self.logger.info("Creating ray origins and directions...")
@@ -101,10 +130,10 @@ class TestIntersectionTriangles(TestCase):
         self.origins = origins
         self.dirs = dirs
 
-#    def tearDown(self):
-#        del self.mesh
-#        del self.scene
-#        del self.embreeDevice
+    def tearDown(self):
+        del self.mesh
+        del self.scene
+        del self.embreeDevice
 
     def test_intersect_simple(self):
         res = self.scene.run(self.origins, self.dirs)
@@ -132,6 +161,62 @@ class TestIntersectionTriangles(TestCase):
         tfar = res['tfar']
         self.assertTrue([ 0, 1, 1], primID)
         self.assertTrue(np.allclose([6.9, 6.9, 6.9,100], tfar))
+        self.assertTrue(np.allclose([0.4, 0.1, 0.15], u))
+        self.assertTrue(np.allclose([0.5, 0.4, 0.35], v))
+
+    def test_update_vertices(self):
+
+        flags = \
+            (
+                rtcs.RTC_SCENE_FLAG_DYNAMIC
+                |
+                rtcs.RTC_SCENE_FLAG_ROBUST
+            )
+
+        self.scene.set_flags(flags)
+        quality = \
+            (
+                rtc.RTC_BUILD_QUALITY_HIGH
+            )
+        self.scene.set_build_quality(quality)
+
+
+        self.logger.info("Running intersection...")
+        res = self.scene.run(self.origins, self.dirs, output=1, dists = 100)
+        self.logger.info("res=%s", res)
+
+        self.assertTrue([0, 0, 0, -1], res['geomID'])
+        ray_inter = res['geomID'] >= 0
+        primID = res['primID'][ray_inter]
+        u = res['u'][ray_inter]
+        v = res['v'][ray_inter]
+        tfar = res['tfar']
+        self.assertTrue([ 0, 1, 1], primID)
+        self.assertTrue(np.allclose([6.9, 6.9, 6.9,100], tfar))
+        self.assertTrue(np.allclose([0.4, 0.1, 0.15], u))
+        self.assertTrue(np.allclose([0.5, 0.4, 0.35], v))
+
+        new_vertices = \
+            np.ascontiguousarray(
+                self.triangles.astype(np.float32).reshape((3 * self.triangles.shape[0], 3))
+                +
+                np.asarray((1.0, 0.0, 0.0), dtype=np.float32)
+            )
+        self.mesh.update_vertices(new_vertices)
+        self.scene.commit()
+        self.logger.info("Running 2nd intersection, post vertex shift...")
+        res = self.scene.run(self.origins, self.dirs, output=1, dists = 100)
+        self.logger.info("res=%s", res)
+
+        self.assertTrue([0, 0, 0, -1], res['geomID'])
+        ray_inter = res['geomID'] >= 0
+        primID = res['primID'][ray_inter]
+        u = res['u'][ray_inter]
+        v = res['v'][ray_inter]
+        tfar = res['tfar']
+        self.logger.info("tfar=%s" % (tfar,))
+        self.assertTrue([ 0, 1, 1], primID)
+        self.assertTrue(np.allclose([7.9, 7.9, 7.9,100], tfar))
         self.assertTrue(np.allclose([0.4, 0.1, 0.15], u))
         self.assertTrue(np.allclose([0.5, 0.4, 0.35], v))
 

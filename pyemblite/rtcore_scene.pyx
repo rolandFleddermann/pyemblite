@@ -6,70 +6,14 @@ import numbers
 cimport rtcore as rtc
 cimport rtcore_ray as rtcr
 cimport rtcore_geometry as rtcg
-cimport rtcore_buffer as rtcb
 from rtcore cimport Vertex, Triangle
 
 
-log = logging.getLogger('pyemblite')
-
-cdef class TestScene:
-
-    def logger(self):
-        """
-        """
-        import logging
-        return logging.getLogger(__name__ + ".TestScene")
-
-    def test_geom1(self):
-        cdef rtc.RTCDevice device = rtc.rtcNewDevice(NULL)  # "verbose=3"
-        cdef RTCScene scene = rtcNewScene(device)
-        cdef rtcg.RTCGeometry mesh = rtcg.rtcNewGeometry(device, rtcg.RTC_GEOMETRY_TYPE_TRIANGLE)
-        rtcg.rtcReleaseGeometry(mesh)
-        rtcReleaseScene(scene)
-        rtc.rtcReleaseDevice(device)
-
-    def test_geom2(self):
-        cdef rtc.EmbreeDevice device = rtc.EmbreeDevice()
-        cdef RTCScene scene = rtcNewScene(device.device)
-        cdef rtcg.RTCGeometry mesh = rtcg.rtcNewGeometry(device.device, rtcg.RTC_GEOMETRY_TYPE_TRIANGLE)
-        rtcg.rtcReleaseGeometry(mesh)
-        rtcReleaseScene(scene)
-
-    def test_geom3(self):
-        cdef rtc.EmbreeDevice device = rtc.EmbreeDevice()
-        cdef EmbreeScene scene = EmbreeScene(device)
-        cdef rtcg.RTCGeometry mesh = rtcg.rtcNewGeometry(scene.device.device, rtcg.RTC_GEOMETRY_TYPE_TRIANGLE)
-        rtcg.rtcReleaseGeometry(mesh)
-
-        rtcCommitScene(scene.scene_i)
-        cdef rtc.RTCBounds bnds
-        rtcGetSceneBounds(scene.scene_i, &bnds)
-        self.logger().info(bnds.lower_x, bnds.lower_y, bnds.lower_z, bnds.upper_x, bnds.upper_y, bnds.upper_z)
-
-    def test_mesh1(self):
-        from pyemblite.mesh_construction import TriangleMesh
-
-        triangles = np.array((((0.0, 0.0, 0.0), (1.0,0.0,0.0), (1.0, 1.0, 0.0)),), dtype=np.float32)
-
-        embreeDevice = rtc.EmbreeDevice()
-        scene = EmbreeScene(embreeDevice)
-        mesh = TriangleMesh(scene, triangles)
-        rtcCommitScene(scene.scene_i)
-        cdef rtc.RTCBounds bnds
-        rtcGetSceneBounds(scene.scene_i, &bnds)
-        self.logger().info(bnds.lower_x, bnds.lower_y, bnds.lower_z, bnds.upper_x, bnds.upper_y, bnds.upper_z)
-        del mesh
-        del scene
-        del embreeDevice
-
+log = logging.getLogger(__name__)
 
 cdef void error_printer(void *userPtr, rtc.RTCError code, const char *_str):
     """
-    error_printer function depends on embree version
-    Embree 2.14.1
-    -> cdef void error_printer(const rtc.RTCError code, const char *_str):
-    Embree 2.17.1
-    -> cdef void error_printer(void* userPtr, const rtc.RTCError code, const char *_str):
+    error_printer function. depends on embree version
     """
     log.error("ERROR CAUGHT IN EMBREE")
     rtc.print_error(code)
@@ -85,6 +29,20 @@ cdef class EmbreeScene:
         rtc.rtcSetDeviceErrorFunction(device.device, error_printer, NULL)
         self.scene_i = rtcNewScene(device.device)
         self.is_committed = 0
+
+    def set_build_quality(self, rtc.RTCBuildQuality quality):
+        rtcSetSceneBuildQuality(self.scene_i, quality)
+
+    def get_flags(self):
+        return rtcGetSceneFlags(self.scene_i)
+
+    def set_flags(self, RTCSceneFlags flags):
+        rtcSetSceneFlags(self.scene_i, flags)
+
+    def commit(self):
+        """
+        """
+        rtcCommitScene(self.scene_i)
 
     def run(self, np.ndarray[np.float32_t, ndim=2] vec_origins,
                   np.ndarray[np.float32_t, ndim=2] vec_directions,

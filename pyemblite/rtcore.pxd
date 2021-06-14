@@ -9,7 +9,7 @@ cdef extern from "embree3/rtcore.h":
     cdef int RTC_VERSION_MINOR
     cdef int RTC_VERSION_PATCH
 
-    cdef enum RTCError:
+    cpdef enum RTCError:
         RTC_ERROR_NONE
         RTC_ERROR_UNKNOWN
         RTC_ERROR_INVALID_ARGUMENT
@@ -117,7 +117,7 @@ cdef extern from "embree3/rtcore.h":
         RTC_FORMAT_GRID
 
     # Build quality levels
-    cdef enum RTCBuildQuality:
+    cpdef enum RTCBuildQuality:
         RTC_BUILD_QUALITY_LOW
         RTC_BUILD_QUALITY_MEDIUM
         RTC_BUILD_QUALITY_HIGH

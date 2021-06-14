@@ -1,4 +1,5 @@
 cimport numpy as np
+cimport cython
 cimport rtcore as rtc
 cimport rtcore_buffer as rtcb
 cimport rtcore_ray as rtcr
@@ -55,18 +56,20 @@ cdef class TriangleMesh:
     def __init__(self,
         rtcs.EmbreeScene scene,
         np.ndarray vertices,
-        np.ndarray indices = None
+        np.ndarray indices = None,
+        rtc.RTCBuildQuality build_quality=rtc.RTC_BUILD_QUALITY_MEDIUM
     ):
 
         if indices is None:
-            self._build_from_flat(scene, vertices)
+            self._build_from_flat(scene, vertices, build_quality)
         else:
-            self._build_from_indices(scene, vertices, indices)
+            self._build_from_indices(scene, vertices, indices, build_quality)
 
     cdef void _build_from_flat(
         self,
         rtcs.EmbreeScene scene,
-        np.ndarray tri_vertices
+        np.ndarray tri_vertices,
+        rtc.RTCBuildQuality build_quality=rtc.RTC_BUILD_QUALITY_MEDIUM
     ):
         cdef int i, j
         cdef int nt = tri_vertices.shape[0]
@@ -74,6 +77,7 @@ cdef class TriangleMesh:
         # but also means we have exactly three times as many vertices as
         # triangles.
         cdef rtcg.RTCGeometry mesh = rtcg.rtcNewGeometry(scene.device.device, rtcg.RTC_GEOMETRY_TYPE_TRIANGLE)
+        rtcg.rtcSetGeometryBuildQuality(mesh, build_quality)
 
         cdef Vertex * vertices = <Vertex *> rtcg.rtcSetNewGeometryBuffer(
                 mesh,
@@ -116,14 +120,15 @@ cdef class TriangleMesh:
         self,
         rtcs.EmbreeScene scene,
         np.ndarray tri_vertices,
-        np.ndarray tri_indices
+        np.ndarray tri_indices,
+        rtc.RTCBuildQuality build_quality=rtc.RTC_BUILD_QUALITY_MEDIUM
     ):
         cdef int i
         cdef int nv = tri_vertices.shape[0]
         cdef int nt = tri_indices.shape[0]
 
         cdef rtcg.RTCGeometry mesh = rtcg.rtcNewGeometry(scene.device.device, rtcg.RTC_GEOMETRY_TYPE_TRIANGLE);
-
+        rtcg.rtcSetGeometryBuildQuality(mesh, build_quality)
         # set up vertex and triangle arrays. In this case, we just read
         # them directly from the inputs
         cdef Vertex * vertices = <Vertex *> rtcg.rtcSetNewGeometryBuffer(
@@ -163,8 +168,26 @@ cdef class TriangleMesh:
         self.meshID = meshID
         self.mesh = mesh
 
+    @cython.boundscheck(False) # turn off bounds-checking for entire function
+    @cython.wraparound(False)  # turn off negative index wrapping for entire function
+    def update_vertices(self, np.ndarray[np.float32_t, ndim=2] new_vertices):
+        """
+        """
+        cdef int i = 0
+        cdef int nv = new_vertices.shape[0]
+        cdef Vertex * vertices = <Vertex *>rtcg.rtcGetGeometryBufferData(self.mesh, rtcb.RTC_BUFFER_TYPE_VERTEX, 0)
+        for i in range(nv):
+            vertices[i].x = new_vertices[i, 0]
+            vertices[i].y = new_vertices[i, 1]
+            vertices[i].z = new_vertices[i, 2]
+
+        # commit mesh
+        rtcg.rtcUpdateGeometryBuffer(self.mesh, rtcb.RTC_BUFFER_TYPE_VERTEX, 0);
+        rtcg.rtcCommitGeometry(self.mesh);
+
     def __dealloc__(self):
         rtcg.rtcReleaseGeometry(self.mesh)
+
 
 cdef class ElementMesh(TriangleMesh):
     r'''
@@ -201,15 +224,16 @@ cdef class ElementMesh(TriangleMesh):
         self,
         rtcs.EmbreeScene scene,
         np.ndarray vertices,
-        np.ndarray indices
+        np.ndarray indices,
+        rtc.RTCBuildQuality build_quality=rtc.RTC_BUILD_QUALITY_MEDIUM
     ):
         # We need now to figure out if we've been handed quads or tetrahedra.
         # If it's quads, we can build the mesh slightly differently.
         # http://stackoverflow.com/questions/23723993/converting-quadriladerals-in-an-obj-file-into-triangles
         if indices.shape[1] == 8:
-            self._build_from_hexahedra(scene, vertices, indices)
+            self._build_from_hexahedra(scene, vertices, indices, build_quality)
         elif indices.shape[1] == 4:
-            self._build_from_tetrahedra(scene, vertices, indices)
+            self._build_from_tetrahedra(scene, vertices, indices, build_quality)
         else:
             raise NotImplementedError
 
@@ -217,7 +241,9 @@ cdef class ElementMesh(TriangleMesh):
         self,
         rtcs.EmbreeScene scene,
         np.ndarray quad_vertices,
-        np.ndarray quad_indices):
+        np.ndarray quad_indices,
+        rtc.RTCBuildQuality build_quality=rtc.RTC_BUILD_QUALITY_MEDIUM
+    ):
 
         cdef int i, j
         cdef int nv = quad_vertices.shape[0]
@@ -228,6 +254,7 @@ cdef class ElementMesh(TriangleMesh):
         cdef int nt = 6*2*ne
 
         cdef rtcg.RTCGeometry mesh = rtcg.rtcNewGeometry(scene.device.device, rtcg.RTC_GEOMETRY_TYPE_TRIANGLE)
+        rtcg.rtcSetGeometryBuildQuality(mesh, build_quality)
 
         # first just copy over the vertices
         cdef Vertex * vertices = <Vertex *> rtcg.rtcSetNewGeometryBuffer(
@@ -273,7 +300,8 @@ cdef class ElementMesh(TriangleMesh):
         self,
         rtcs.EmbreeScene scene,
         np.ndarray tetra_vertices,
-        np.ndarray tetra_indices
+        np.ndarray tetra_indices,
+        rtc.RTCBuildQuality build_quality=rtc.RTC_BUILD_QUALITY_MEDIUM
     ):
 
         cdef int i, j
@@ -284,6 +312,7 @@ cdef class ElementMesh(TriangleMesh):
         cdef int nt = 4*ne
 
         cdef rtcg.RTCGeometry mesh = rtcg.rtcNewGeometry(scene.device.device, rtcg.RTC_GEOMETRY_TYPE_TRIANGLE)
+        rtcg.rtcSetGeometryBuildQuality(mesh, build_quality)
 
         # first just copy over the vertices
         cdef Vertex * vertices = <Vertex *> rtcg.rtcSetNewGeometryBuffer(
