@@ -3,10 +3,10 @@ cimport numpy as np
 import numpy as np
 import logging
 import numbers
-cimport rtcore as rtc
-cimport rtcore_ray as rtcr
-cimport rtcore_geometry as rtcg
-from rtcore cimport Vertex, Triangle
+from . cimport rtcore as rtc
+from . cimport rtcore_ray as rtcr
+from . cimport rtcore_geometry as rtcg
+from .rtcore cimport Vertex, Triangle
 
 
 log = logging.getLogger(__name__)
@@ -25,7 +25,7 @@ cdef class EmbreeScene:
         if device is None:
             # We store the embree device inside EmbreeScene to avoid premature deletion
             device = rtc.EmbreeDevice()
-        self.device = device 
+        self.device = device
         rtc.rtcSetDeviceErrorFunction(device.device, error_printer, NULL)
         self.scene_i = rtcNewScene(device.device)
         self.is_committed = 0
@@ -96,7 +96,7 @@ cdef class EmbreeScene:
 
         cdef rtcr.RTCIntersectContext ray_ctx
         rtcr.rtcInitIntersectContext( &ray_ctx)
-        
+
         cdef rtcr.RTCRayHit ray_hit
         vd_i = 0
         vd_step = 1
@@ -129,7 +129,7 @@ cdef class EmbreeScene:
                 # print("ray_hit.ray.tfar=%s" % ray_hit.ray.tfar)
                 # print("PST: %d" % ray_hit.hit.geomID)
                 # print("PST: %d" % ray_hit.hit.primID)
- 
+
                 if not output:
                     if query_type == intersect:
                         intersect_ids[i] = ray_hit.hit.primID
@@ -141,7 +141,7 @@ cdef class EmbreeScene:
                     u[i] = ray_hit.hit.u
                     v[i] = ray_hit.hit.v
                     tfars[i] = ray_hit.ray.tfar
-                    
+
                     Ng[i, 0] = ray_hit.hit.Ng_x
                     Ng[i, 1] = ray_hit.hit.Ng_y
                     Ng[i, 2] = ray_hit.hit.Ng_z

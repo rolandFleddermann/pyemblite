@@ -26,7 +26,7 @@ cdef extern from "embree3/rtcore_geometry.h":
         RTC_BUFFER_TYPE_NORMAL_DERIVATIVE
 
         RTC_BUFFER_TYPE_GRID
-        
+
         RTC_BUFFER_TYPE_FACE
         RTC_BUFFER_TYPE_LEVEL
         RTC_BUFFER_TYPE_EDGE_CREASE_INDEX
@@ -43,33 +43,33 @@ cdef extern from "embree3/rtcore_geometry.h":
         RTC_GEOMETRY_TYPE_TRIANGLE # triangle mesh
         RTC_GEOMETRY_TYPE_QUAD     # quad (triangle pair) mesh
         RTC_GEOMETRY_TYPE_GRID     # grid mesh
-        
+
         RTC_GEOMETRY_TYPE_SUBDIVISION # Catmull-Clark subdivision surface
-        
-        RTC_GEOMETRY_TYPE_CONE_LINEAR_CURVE # Cone linear curves - discontinuous at edge boundaries 
-        RTC_GEOMETRY_TYPE_ROUND_LINEAR_CURVE # Round (rounded cone like) linear curves 
+
+        RTC_GEOMETRY_TYPE_CONE_LINEAR_CURVE # Cone linear curves - discontinuous at edge boundaries
+        RTC_GEOMETRY_TYPE_ROUND_LINEAR_CURVE # Round (rounded cone like) linear curves
         RTC_GEOMETRY_TYPE_FLAT_LINEAR_CURVE  # flat (ribbon-like) linear curves
-        
+
         RTC_GEOMETRY_TYPE_ROUND_BEZIER_CURVE # round (tube-like) Bezier curves
         RTC_GEOMETRY_TYPE_FLAT_BEZIER_CURVE # flat (ribbon-like) Bezier curves
         RTC_GEOMETRY_TYPE_NORMAL_ORIENTED_BEZIER_CURVE # flat normal-oriented Bezier curves
-        
+
         RTC_GEOMETRY_TYPE_ROUND_BSPLINE_CURVE = 32 # round (tube-like) B-spline curves
         RTC_GEOMETRY_TYPE_FLAT_BSPLINE_CURVE  = 33 # flat (ribbon-like) B-spline curves
         RTC_GEOMETRY_TYPE_NORMAL_ORIENTED_BSPLINE_CURVE # flat normal-oriented B-spline curves
-        
+
         RTC_GEOMETRY_TYPE_ROUND_HERMITE_CURVE # round (tube-like) Hermite curves
         RTC_GEOMETRY_TYPE_FLAT_HERMITE_CURVE # flat (ribbon-like) Hermite curves
         RTC_GEOMETRY_TYPE_NORMAL_ORIENTED_HERMITE_CURVE # flat normal-oriented Hermite curves
-        
+
         RTC_GEOMETRY_TYPE_SPHERE_POINT
         RTC_GEOMETRY_TYPE_DISC_POINT
         RTC_GEOMETRY_TYPE_ORIENTED_DISC_POINT
-        
+
         RTC_GEOMETRY_TYPE_ROUND_CATMULL_ROM_CURVE # round (tube-like) Catmull-Rom curves
         RTC_GEOMETRY_TYPE_FLAT_CATMULL_ROM_CURVE # flat (ribbon-like) Catmull-Rom curves
         RTC_GEOMETRY_TYPE_NORMAL_ORIENTED_CATMULL_ROM_CURVE # flat normal-oriented Catmull-Rom curves
-        
+
         RTC_GEOMETRY_TYPE_USER # user-defined geometry
         RTC_GEOMETRY_TYPE_INSTANCE # scene instance
 
@@ -174,7 +174,7 @@ cdef extern from "embree3/rtcore_geometry.h":
 
     # Sets the motion blur time range of the geometry.
     void rtcSetGeometryTimeRange(RTCGeometry geometry, float startTime, float endTime)
-  
+
     # Sets the number of vertex attributes of the geometry.
     void rtcSetGeometryVertexAttributeCount(RTCGeometry geometry, unsigned int vertexAttributeCount);
 
@@ -240,19 +240,19 @@ cdef extern from "embree3/rtcore_geometry.h":
 #     ctypedef void (*RTCFilterFunc4)(void* ptr, RTCRay4& ray)
 #     ctypedef void (*RTCFilterFunc8)(void* ptr, RTCRay8& ray)
 #     ctypedef void (*RTCFilterFunc16)(void* ptr, RTCRay16& ray)
-# 
+#
 #     ctypedef void (*RTCDisplacementFunc)(void* ptr, unsigned geomID, unsigned primID,
 #                                          const float* u, const float* v,
 #                                          const float* nx, const float* ny, const float* nz,
 #                                          float* px, float* py, float* pz, size_t N)
-# 
+#
 #     unsigned rtcNewInstance(RTCScene target, RTCScene source)
 #     void rtcSetTransform(RTCScene scene, unsigned geomID,
 #                          RTCMatrixType layout, const float *xfm)
-#     unsigned rtcNewTriangleMesh(RTCScene scene, RTCGeometryFlags flags, 
+#     unsigned rtcNewTriangleMesh(RTCScene scene, RTCGeometryFlags flags,
 #                                 size_t numTriangles, size_t numVertices,
 #                                 size_t numTimeSteps)
-# 
+#
 #     unsigned rtcNewSubdivisionMesh (RTCScene scene, RTCGeometryFlags flags,
 #                                     size_t numFaces, size_t numEdges,
 #                                     size_t numVertices, size_t numEdgeCreases,

@@ -1,3 +1,6 @@
+"""
+Unit tests.
+"""
 from unittest import TestCase
 import numpy as np
 from pyemblite import rtcore as rtc
@@ -26,11 +29,11 @@ def xplane_only_points(x):
 def define_rays_origins_and_directions():
     N = 4
     origins = np.zeros((N, 3), dtype='float32')
-    origins[:,0] = 0.1
-    origins[0,1] = -0.2
-    origins[1,1] = +0.2
-    origins[2,1] = +0.3
-    origins[3,1] = -8.2
+    origins[:, 0] = 0.1
+    origins[0, 1] = -0.2
+    origins[1, 1] = +0.2
+    origins[2, 1] = +0.3
+    origins[3, 1] = -8.2
 
     dirs = np.zeros((N, 3), dtype='float32')
     dirs[:, 0] = 1.0
@@ -143,14 +146,13 @@ class TestIntersectionTriangles(TestCase):
     def test_intersect_distance(self):
         self.logger.info("origins=%s", self.origins)
         self.logger.info("dirs   =%s", self.dirs)
-        res = self.scene.run(self.origins, self.dirs,query='DISTANCE')
+        res = self.scene.run(self.origins, self.dirs, query='DISTANCE')
         self.logger.info("res=%s", res)
-        self.assertTrue(np.allclose([6.9, 6.9, 6.9,1e37], res))
-
+        self.assertTrue(np.allclose([6.9, 6.9, 6.9, 1e37], res))
 
     def test_intersect(self):
         self.logger.info("Running intersection...")
-        res = self.scene.run(self.origins, self.dirs, output=1, dists = 100)
+        res = self.scene.run(self.origins, self.dirs, output=1, dists=100)
         self.logger.info("res=%s", res)
 
         self.assertTrue([0, 0, 0, -1], res['geomID'])
@@ -159,8 +161,8 @@ class TestIntersectionTriangles(TestCase):
         u = res['u'][ray_inter]
         v = res['v'][ray_inter]
         tfar = res['tfar']
-        self.assertTrue([ 0, 1, 1], primID)
-        self.assertTrue(np.allclose([6.9, 6.9, 6.9,100], tfar))
+        self.assertTrue([0, 1, 1], primID)
+        self.assertTrue(np.allclose([6.9, 6.9, 6.9, 100], tfar))
         self.assertTrue(np.allclose([0.4, 0.1, 0.15], u))
         self.assertTrue(np.allclose([0.5, 0.4, 0.35], v))
 
@@ -180,9 +182,8 @@ class TestIntersectionTriangles(TestCase):
             )
         self.scene.set_build_quality(quality)
 
-
         self.logger.info("Running intersection...")
-        res = self.scene.run(self.origins, self.dirs, output=1, dists = 100)
+        res = self.scene.run(self.origins, self.dirs, output=1, dists=100)
         self.logger.info("res=%s", res)
 
         self.assertTrue([0, 0, 0, -1], res['geomID'])
@@ -191,8 +192,8 @@ class TestIntersectionTriangles(TestCase):
         u = res['u'][ray_inter]
         v = res['v'][ray_inter]
         tfar = res['tfar']
-        self.assertTrue([ 0, 1, 1], primID)
-        self.assertTrue(np.allclose([6.9, 6.9, 6.9,100], tfar))
+        self.assertTrue([0, 1, 1], primID)
+        self.assertTrue(np.allclose([6.9, 6.9, 6.9, 100], tfar))
         self.assertTrue(np.allclose([0.4, 0.1, 0.15], u))
         self.assertTrue(np.allclose([0.5, 0.4, 0.35], v))
 
@@ -205,7 +206,7 @@ class TestIntersectionTriangles(TestCase):
         self.mesh.update_vertices(new_vertices)
         self.scene.commit()
         self.logger.info("Running 2nd intersection, post vertex shift...")
-        res = self.scene.run(self.origins, self.dirs, output=1, dists = 100)
+        res = self.scene.run(self.origins, self.dirs, output=1, dists=100)
         self.logger.info("res=%s", res)
 
         self.assertTrue([0, 0, 0, -1], res['geomID'])
@@ -215,8 +216,8 @@ class TestIntersectionTriangles(TestCase):
         v = res['v'][ray_inter]
         tfar = res['tfar']
         self.logger.info("tfar=%s" % (tfar,))
-        self.assertTrue([ 0, 1, 1], primID)
-        self.assertTrue(np.allclose([7.9, 7.9, 7.9,100], tfar))
+        self.assertTrue([0, 1, 1], primID)
+        self.assertTrue(np.allclose([7.9, 7.9, 7.9, 100], tfar))
         self.assertTrue(np.allclose([0.4, 0.1, 0.15], u))
         self.assertTrue(np.allclose([0.5, 0.4, 0.35], v))
 
@@ -251,10 +252,11 @@ class TestIntersectionTrianglesFromIndices(TestCase):
         u = res['u'][ray_inter]
         v = res['v'][ray_inter]
         tfar = res['tfar'][ray_inter]
-        self.assertTrue([ 0, 1, 1], primID)
+        self.assertTrue([0, 1, 1], primID)
         self.assertTrue(np.allclose([6.9, 6.9, 6.9], tfar))
         self.assertTrue(np.allclose([0.4, 0.1, 0.15], u))
         self.assertTrue(np.allclose([0.5, 0.4, 0.35], v))
+
 
 def initialise_loggers(names, log_level=None, handler_class=None):
     """
@@ -290,5 +292,5 @@ if __name__ == '__main__':
     import logging
     from unittest import main
 
-    initialise_loggers(["pyemblite", __name__,], logging.WARNING)
+    initialise_loggers(["pyemblite", __name__, ], logging.WARNING)
     main()

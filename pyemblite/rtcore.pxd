@@ -1,4 +1,4 @@
-# rtcore.pxd wrapper
+# rtcore wrapper
 
 cimport cython
 cimport numpy as np
@@ -22,57 +22,57 @@ cdef extern from "embree3/rtcore.h":
 
     # Formats of buffers and other data structures
     cdef enum RTCFormat:
-    
+
         RTC_FORMAT_UNDEFINED
-        
+
         # 8-bit unsigned integer
         RTC_FORMAT_UCHAR
         RTC_FORMAT_UCHAR2
         RTC_FORMAT_UCHAR3
         RTC_FORMAT_UCHAR4
-        
+
         # 8-bit signed integer
         RTC_FORMAT_CHAR
         RTC_FORMAT_CHAR2
         RTC_FORMAT_CHAR3
         RTC_FORMAT_CHAR4
-        
+
         # 16-bit unsigned integer
         RTC_FORMAT_USHORT
         RTC_FORMAT_USHORT2
         RTC_FORMAT_USHORT3
         RTC_FORMAT_USHORT4
-        
+
         # 16-bit signed integer
         RTC_FORMAT_SHORT
         RTC_FORMAT_SHORT2
         RTC_FORMAT_SHORT3
         RTC_FORMAT_SHORT4
-        
+
         # 32-bit unsigned integer
         RTC_FORMAT_UINT
         RTC_FORMAT_UINT2
         RTC_FORMAT_UINT3
         RTC_FORMAT_UINT4
-        
+
         # 32-bit signed integer
         RTC_FORMAT_INT
         RTC_FORMAT_INT2
         RTC_FORMAT_INT3
         RTC_FORMAT_INT4
-        
+
         # 64-bit unsigned integer
         RTC_FORMAT_ULLONG
         RTC_FORMAT_ULLONG2
         RTC_FORMAT_ULLONG3
         RTC_FORMAT_ULLONG4
-        
+
         # 64-bit signed integer
         RTC_FORMAT_LLONG
         RTC_FORMAT_LLONG2
         RTC_FORMAT_LLONG3
         RTC_FORMAT_LLONG4
-        
+
         # 32-bit float
         RTC_FORMAT_FLOAT
         RTC_FORMAT_FLOAT2
@@ -90,7 +90,7 @@ cdef extern from "embree3/rtcore.h":
         RTC_FORMAT_FLOAT14
         RTC_FORMAT_FLOAT15
         RTC_FORMAT_FLOAT16
-        
+
         # 32-bit float matrix (row-major order)
         RTC_FORMAT_FLOAT2X2_ROW_MAJOR
         RTC_FORMAT_FLOAT2X3_ROW_MAJOR
@@ -101,7 +101,7 @@ cdef extern from "embree3/rtcore.h":
         RTC_FORMAT_FLOAT4X2_ROW_MAJOR
         RTC_FORMAT_FLOAT4X3_ROW_MAJOR
         RTC_FORMAT_FLOAT4X4_ROW_MAJOR
-        
+
         # 32-bit float matrix (column-major order)
         RTC_FORMAT_FLOAT2X2_COLUMN_MAJOR
         RTC_FORMAT_FLOAT2X3_COLUMN_MAJOR
@@ -112,7 +112,7 @@ cdef extern from "embree3/rtcore.h":
         RTC_FORMAT_FLOAT4X2_COLUMN_MAJOR
         RTC_FORMAT_FLOAT4X3_COLUMN_MAJOR
         RTC_FORMAT_FLOAT4X4_COLUMN_MAJOR
-        
+
         # special 12-byte format for grids
         RTC_FORMAT_GRID
 
@@ -152,17 +152,17 @@ cdef extern from "embree3/rtcore.h":
         RTCBounds bounds1;
 
     # Point query structure for closest point query */
-    cdef struct RTCPointQuery: 
-    
+    cdef struct RTCPointQuery:
+
         float x                 # x coordinate of the query point
         float y                 # y coordinate of the query point
         float z                 # z coordinate of the query point
         float time              # time of the point query
-        float radius            # radius of the point query 
+        float radius            # radius of the point query
 
     # Structure of a packet of 4 query points */
     cdef struct RTCPointQuery4:
-    
+
         float x[4]                 # x coordinate of the query point
         float y[4]                 # y coordinate of the query point
         float z[4]                 # z coordinate of the query point
@@ -172,17 +172,17 @@ cdef extern from "embree3/rtcore.h":
 
     # Structure of a packet of 8 query points */
     cdef struct RTCPointQuery8:
-    
+
         float x[8]                 # x coordinate of the query point
         float y[8]                 # y coordinate of the query point
         float z[8]                 # z coordinate of the query point
         float time[8]              # time of the point query
-        float radius[8]            # radius ofr the point query 
+        float radius[8]            # radius ofr the point query
 
 
     # Structure of a packet of 16 query points */
     cdef struct RTCPointQuery16:
-    
+
         float x[16]                 # x coordinate of the query point
         float y[16]                 # y coordinate of the query point
         float z[16]                 # z coordinate of the query point
@@ -196,14 +196,14 @@ cdef extern from "embree3/rtcore.h":
         # accumulated 4x4 column major matrices from world space to instance space.
         # undefined if size == 0.
         float world2inst[RTC_MAX_INSTANCE_LEVEL_COUNT][16]
-        
+
         # accumulated 4x4 column major matrices from instance space to world space.
         # undefined if size == 0.
         float inst2world[RTC_MAX_INSTANCE_LEVEL_COUNT][16]
-        
+
         # instance ids.
         unsigned int instID[RTC_MAX_INSTANCE_LEVEL_COUNT]
-        
+
         # number of instances currently on the stack.
         unsigned int instStackSize
 
@@ -219,18 +219,18 @@ cdef extern from "embree3/rtcore.h":
         # search domain. Increasing the radius or modifying the time or position of
         # the query results in undefined behaviour.
         RTCPointQuery* query
-        
+
         # Used for user input/output data. Will not be read or modified internally.
         void* userPtr;
-        
+
         # primitive and geometry ID of primitive
-        unsigned int  primID         
-        unsigned int  geomID     
-        
+        unsigned int  primID
+        unsigned int  geomID
+
         # the context with transformation and instance ID stack
         RTCPointQueryContext* context
-        
-        # If the current instance transform M (= context->world2inst[context->instStackSize]) 
+
+        # If the current instance transform M (= context->world2inst[context->instStackSize])
         # is a similarity matrix, i.e there is a constant factor similarityScale such that,
         #    for all x,y: dist(Mx, My) = similarityScale * dist(x, y),
         # The similarity scale is 0, if the current instance transform is not a

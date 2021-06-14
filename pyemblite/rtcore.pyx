@@ -1,7 +1,8 @@
+# Embree device.
 import logging
 
 
-log = logging.getLogger('pyemblite')
+log = logging.getLogger(__name__)
 
 cdef void print_error(RTCError code):
     if code == RTC_ERROR_NONE:

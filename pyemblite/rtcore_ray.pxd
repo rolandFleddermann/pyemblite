@@ -1,4 +1,4 @@
-# rtcore_ray.pxd wrapper
+# rtcore_ray wrapper for ray query structs.
 
 cimport cython
 cimport numpy as np
