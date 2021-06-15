@@ -10,43 +10,42 @@ Python wrapper for Embree-3. Source code adapted from
 
 .. end long description.
 
-Example
-=======
+Quick Start
+===========
 
-```
-import trimesh
-from pyemblite.mesh_processing import TriangleMesh
-from pyemblite.rtcore_scene import EmbreeScene
+Example::
 
-# Create Embree scene which holds meshes.
-scene = EmbreeScene()
+   import trimesh
+   from pyemblite.mesh_processing import TriangleMesh
+   from pyemblite.rtcore_scene import EmbreeScene
 
-# Load a mesh from file using trimesh (https://github.com/mikedh/trimesh).
-tmesh = trimesh.load("a_triangle_mesh.ply")
+   # Create Embree scene which holds meshes.
+   scene = EmbreeScene()
 
-# Create Embree triangle mesh geometry
-emesh = TriangleMesh(scene, tmesh.vertices, tmesh.faces)
-del tmesh
+   # Load a mesh from file using trimesh (https://github.com/mikedh/trimesh).
+   tmesh = trimesh.load("a_triangle_mesh.ply")
 
-# Commit the scene (builds spatial acceleration structures).
-scene.commit()
+   # Create Embree triangle mesh geometry
+   emesh = TriangleMesh(scene, tmesh.vertices, tmesh.faces)
+   del tmesh
 
-# Generate ray origins and ray directions
-ray_orgs = ...  # A (N, 3) shaped array, dtype=np.float32
-ray_dirs = ...  # A (N, 3) shaped array, dtype=np.float32
+   # Commit the scene (builds spatial acceleration structures).
+   scene.commit()
 
-# Query the index of the first face which gets hit by ray
-# (index of -1 indicates ray did not hit a face)
-primID = scene.run(ray_orgs, ray_dirs, query='INTERSECT')
+   # Generate ray origins and ray directions
+   ray_orgs = ...  # A (N, 3) shaped array, dtype=np.float32
+   ray_dirs = ...  # A (N, 3) shaped array, dtype=np.float32
 
-# Query the distance from the ray origin where face which gets hit by ray
-tfar = scene.run(ray_orgs, ray_dirs, query='DISTANCE')
+   # Query the index of the first face which gets hit by ray
+   # (index of -1 indicates ray did not hit a face)
+   primID = scene.run(ray_orgs, ray_dirs, query='INTERSECT')
 
-# Query all info, intersect_info is a dict with keys:
-# ['u', 'v', 'Ng', 'tfar', 'primID', 'geomID']
-intersect_info = scene.run(ray_orgs, ray_dirs, output=True)
+   # Query the distance from the ray origin where face which gets hit by ray
+   tfar = scene.run(ray_orgs, ray_dirs, query='DISTANCE')
 
-```
+   # Query all info, intersect_info is a dict with keys:
+   # ['u', 'v', 'Ng', 'tfar', 'primID', 'geomID']
+   intersect_info = scene.run(ray_orgs, ray_dirs, output=True)
 
 
 Installation
