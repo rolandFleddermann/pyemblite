@@ -40,5 +40,12 @@ setup(
     ext_modules=ext_modules,
     zip_safe=False,
     packages=find_packages(),
-    package_data={'pyemblite': ['*.pxd']}
+    package_data={'pyemblite': ['*.pxd']},
+    install_requires=[
+        "numpy>=1.7",
+    ],
+    setup_requires=[
+        "numpy>=1.7",
+        "cython"
+    ]
 )
