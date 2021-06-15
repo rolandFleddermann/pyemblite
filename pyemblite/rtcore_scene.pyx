@@ -1,5 +1,6 @@
 cimport cython
 cimport numpy as np
+from libcpp cimport bool
 import numpy as np
 import logging
 import numbers
@@ -44,6 +45,8 @@ cdef class EmbreeScene:
         """
         rtcCommitScene(self.scene_i)
 
+    @cython.boundscheck(False) # turn off bounds-checking for entire function
+    @cython.wraparound(False)  # turn off negative index wrapping for entire function
     def run(self, np.ndarray[np.float32_t, ndim=2] vec_origins,
                   np.ndarray[np.float32_t, ndim=2] vec_directions,
                   dists=None, query='INTERSECT', output=None):
@@ -61,8 +64,20 @@ cdef class EmbreeScene:
         cdef int nv = vec_origins.shape[0]
         cdef int vo_i, vd_i, vd_step
         cdef np.ndarray[np.int32_t, ndim=1] intersect_ids
+        cdef np.ndarray[np.int32_t, ndim=1] primID
+        cdef np.ndarray[np.int32_t, ndim=1] geomID
         cdef np.ndarray[np.float32_t, ndim=1] tfars
+        cdef np.ndarray[np.float32_t, ndim=1] u
+        cdef np.ndarray[np.float32_t, ndim=1] v
+        cdef np.ndarray[np.float32_t, ndim=2] Ng
+
         cdef rayQueryType query_type
+
+        cdef bool do_dict_return = 0
+        if (output is not None) and output:
+            do_dict_return = 1
+
+
 
         if query == 'INTERSECT':
             query_type = intersect
@@ -84,7 +99,7 @@ cdef class EmbreeScene:
         else:
             tfars = dists
 
-        if output:
+        if do_dict_return:
             u = np.empty(nv, dtype="float32")
             v = np.empty(nv, dtype="float32")
             Ng = np.empty((nv, 3), dtype="float32")
@@ -130,7 +145,7 @@ cdef class EmbreeScene:
                 # print("PST: %d" % ray_hit.hit.geomID)
                 # print("PST: %d" % ray_hit.hit.primID)
 
-                if not output:
+                if not do_dict_return:
                     if query_type == intersect:
                         intersect_ids[i] = ray_hit.hit.primID
                     else:
@@ -149,7 +164,7 @@ cdef class EmbreeScene:
                 rtcOccluded1(self.scene_i, &ray_ctx, &(ray_hit.ray))
                 intersect_ids[i] = ray_hit.hit.geomID
 
-        if output:
+        if do_dict_return:
             return {'u':u, 'v':v, 'Ng': Ng, 'tfar': tfars, 'primID': primID, 'geomID': geomID}
         else:
             if query_type == distance:
