@@ -13,7 +13,7 @@ Python wrapper for Embree-3. Source code adapted from
 Example
 =======
 
-```python
+```
 import trimesh
 from pyemblite.mesh_processing import TriangleMesh
 from pyemblite.rtcore_scene import EmbreeScene
@@ -45,6 +45,7 @@ tfar = scene.run(ray_orgs, ray_dirs, query='DISTANCE')
 # Query all info, intersect_info is a dict with keys:
 # ['u', 'v', 'Ng', 'tfar', 'primID', 'geomID']
 intersect_info = scene.run(ray_orgs, ray_dirs, output=True)
+
 ```
 
 
