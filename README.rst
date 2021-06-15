@@ -15,33 +15,41 @@ Quick Start
 
 Example::
 
+   import numpy as np
    import trimesh
-   from pyemblite.mesh_processing import TriangleMesh
+   from trimesh.primitives import Sphere
+   from pyemblite.mesh_construction import TriangleMesh
    from pyemblite.rtcore_scene import EmbreeScene
 
    # Create Embree scene which holds meshes.
    scene = EmbreeScene()
 
-   # Load a mesh from file using trimesh (https://github.com/mikedh/trimesh).
-   tmesh = trimesh.load("a_triangle_mesh.ply")
+   # Create a mesh using trimesh (https://github.com/mikedh/trimesh).
+   tmesh = Sphere(radius=5.0, subdivisions=1)
 
    # Create Embree triangle mesh geometry
    emesh = TriangleMesh(scene, tmesh.vertices, tmesh.faces)
-   del tmesh
 
    # Commit the scene (builds spatial acceleration structures).
    scene.commit()
 
    # Generate ray origins and ray directions
-   ray_orgs = ...  # A (N, 3) shaped array, dtype=np.float32
-   ray_dirs = ...  # A (N, 3) shaped array, dtype=np.float32
+   ray_orgs = (
+       np.zeros((tmesh.vertices.shape[0], 3), dtype=np.float32)
+       +
+       tmesh.centroid
+   ).astype(np.float32)
+   ray_dirs = (tmesh.vertices - tmesh.centroid).astype(np.float32)
+   ray_dirs /= np.linalg.norm(ray_dirs, axis=1)[np.newaxis, 1]
 
    # Query the index of the first face which gets hit by ray
    # (index of -1 indicates ray did not hit a face)
    primID = scene.run(ray_orgs, ray_dirs, query='INTERSECT')
 
    # Query the distance from the ray origin where face which gets hit by ray
+   # Intersection points are ray_orgs + tfar * ray_dirs
    tfar = scene.run(ray_orgs, ray_dirs, query='DISTANCE')
+   print(tfar)
 
    # Query all info, intersect_info is a dict with keys:
    # ['u', 'v', 'Ng', 'tfar', 'primID', 'geomID']
