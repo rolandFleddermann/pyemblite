@@ -172,5 +172,59 @@ cdef class EmbreeScene:
             else:
                 return intersect_ids
 
+    @cython.boundscheck(False) # turn off bounds-checking for entire function
+    @cython.wraparound(False)  # turn off negative index wrapping for entire function
+    def shortest_distance(self, np.ndarray[np.float32_t, ndim=2] vec_origins,
+                                np.ndarray[np.float32_t, ndim=2] vec_directions):
+
+        if self.is_committed == 0:
+            # print("Committing scene...")
+            rtcCommitScene(self.scene_i)
+            self.is_committed = 1
+
+        cdef rtc.RTCBounds bnds
+        rtcGetSceneBounds(self.scene_i, &bnds)
+        # print(bnds.lower_x, bnds.lower_y, bnds.lower_z, bnds.upper_x, bnds.upper_y, bnds.upper_z)
+
+        cdef int nv = vec_origins.shape[0]
+        cdef int vo_i, vd_i, vd_step
+
+        cdef np.float32_t dist = 1e37
+
+        cdef rtcr.RTCIntersectContext ray_ctx
+        rtcr.rtcInitIntersectContext( &ray_ctx)
+
+        cdef rtcr.RTCRayHit ray_hit
+        vd_i = 0
+        vd_step = 1
+        # If vec_directions is 1 long, we won't be updating it.
+        if vec_directions.shape[0] == 1: vd_step = 0
+
+        for i in range(nv):
+            ray_hit.ray.org_x = vec_origins[i, 0]
+            ray_hit.ray.org_y = vec_origins[i, 1]
+            ray_hit.ray.org_z = vec_origins[i, 2]
+            ray_hit.ray.dir_x = vec_directions[vd_i, 0]
+            ray_hit.ray.dir_y = vec_directions[vd_i, 1]
+            ray_hit.ray.dir_z = vec_directions[vd_i, 2]
+            ray_hit.ray.time = 0
+            ray_hit.ray.mask = -1
+            ray_hit.ray.flags = 0
+
+            ray_hit.ray.tnear = 0.0
+            ray_hit.ray.tfar = dist
+            ray_hit.ray.id = i
+            ray_hit.hit.geomID = rtcg.RTC_INVALID_GEOMETRY_ID
+            ray_hit.hit.primID = rtcg.RTC_INVALID_GEOMETRY_ID
+
+            vd_i += vd_step
+
+            rtcIntersect1(self.scene_i, &ray_ctx, &ray_hit)
+
+            if ray_hit.ray.tfar < dist:
+                dist = ray_hit.ray.tfar
+
+        return dist
+
     def __dealloc__(self):
         rtcReleaseScene(self.scene_i)
