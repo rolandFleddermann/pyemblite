@@ -56,8 +56,8 @@ cdef class EmbreeScene:
             rtcCommitScene(self.scene_i)
             self.is_committed = 1
 
-        cdef rtc.RTCBounds bnds
-        rtcGetSceneBounds(self.scene_i, &bnds)
+        #cdef rtc.RTCBounds bnds
+        #rtcGetSceneBounds(self.scene_i, &bnds)
         # print(bnds.lower_x, bnds.lower_y, bnds.lower_z, bnds.upper_x, bnds.upper_y, bnds.upper_z)
 
 
@@ -178,13 +178,8 @@ cdef class EmbreeScene:
                                 np.ndarray[np.float32_t, ndim=2] vec_directions):
 
         if self.is_committed == 0:
-            # print("Committing scene...")
             rtcCommitScene(self.scene_i)
             self.is_committed = 1
-
-        cdef rtc.RTCBounds bnds
-        rtcGetSceneBounds(self.scene_i, &bnds)
-        # print(bnds.lower_x, bnds.lower_y, bnds.lower_z, bnds.upper_x, bnds.upper_y, bnds.upper_z)
 
         cdef int nv = vec_origins.shape[0]
         cdef int vo_i, vd_i, vd_step
