@@ -221,5 +221,56 @@ cdef class EmbreeScene:
 
         return dist
 
+    @cython.boundscheck(False) # turn off bounds-checking for entire function
+    @cython.wraparound(False)  # turn off negative index wrapping for entire function
+    def intersections(self, np.ndarray[np.float32_t, ndim=2] vec_origins,
+                            np.ndarray[np.float32_t, ndim=2] vec_directions):
+
+        if self.is_committed == 0:
+            rtcCommitScene(self.scene_i)
+            self.is_committed = 1
+
+        cdef int nv = vec_origins.shape[0]
+        cdef int vo_i, vd_i, vd_step
+        cdef np.ndarray[np.int32_t, ndim=1] primID = np.empty(nv, dtype="int32")
+        cdef np.ndarray[np.float32_t, ndim=1] u = np.empty(nv, dtype="float32")
+        cdef np.ndarray[np.float32_t, ndim=1] v = np.empty(nv, dtype="float32")
+
+        cdef rtcr.RTCIntersectContext ray_ctx
+        rtcr.rtcInitIntersectContext( &ray_ctx)
+
+        cdef rtcr.RTCRayHit ray_hit
+        vd_i = 0
+        vd_step = 1
+        # If vec_directions is 1 long, we won't be updating it.
+        if vec_directions.shape[0] == 1: vd_step = 0
+
+        for i in range(nv):
+            ray_hit.ray.org_x = vec_origins[i, 0]
+            ray_hit.ray.org_y = vec_origins[i, 1]
+            ray_hit.ray.org_z = vec_origins[i, 2]
+            ray_hit.ray.dir_x = vec_directions[vd_i, 0]
+            ray_hit.ray.dir_y = vec_directions[vd_i, 1]
+            ray_hit.ray.dir_z = vec_directions[vd_i, 2]
+            ray_hit.ray.time = 0
+            ray_hit.ray.mask = -1
+            ray_hit.ray.flags = 0
+
+            ray_hit.ray.tnear = 0.0
+            ray_hit.ray.tfar = 1e37
+            ray_hit.ray.id = i
+            ray_hit.hit.geomID = rtcg.RTC_INVALID_GEOMETRY_ID
+            ray_hit.hit.primID = rtcg.RTC_INVALID_GEOMETRY_ID
+
+            vd_i += vd_step
+
+            rtcIntersect1(self.scene_i, &ray_ctx, &ray_hit)
+
+            primID[i] = ray_hit.hit.primID
+            u[i] = ray_hit.hit.u
+            v[i] = ray_hit.hit.v
+
+        return { 'u': u, 'v': v, 'primID': primID }
+
     def __dealloc__(self):
         rtcReleaseScene(self.scene_i)
