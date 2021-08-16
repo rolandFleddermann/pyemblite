@@ -257,7 +257,8 @@ cdef class EmbreeSceneExtended(EmbreeScene):
     def shortest_distance(
         self,
         np.ndarray[np.float32_t, ndim=2] vec_origins,
-        np.ndarray[np.float32_t, ndim=2] vec_directions
+        np.ndarray[np.float32_t, ndim=2] vec_directions,
+        float offset=0.0
     ):
         cdef int nv = vec_origins.shape[0]
         cdef np.float32_t dist = 1e37
@@ -267,9 +268,9 @@ cdef class EmbreeSceneExtended(EmbreeScene):
         cdef rtcr.RTCRayHit ray_hit
 
         for i in range(nv):
-            ray_hit.ray.org_x = vec_origins[i, 0]
-            ray_hit.ray.org_y = vec_origins[i, 1]
-            ray_hit.ray.org_z = vec_origins[i, 2]
+            ray_hit.ray.org_x = vec_origins[i, 0] + offset * vec_directions[i, 0]
+            ray_hit.ray.org_y = vec_origins[i, 1] + offset * vec_directions[i, 1]
+            ray_hit.ray.org_z = vec_origins[i, 2] + offset * vec_directions[i, 2]
             ray_hit.ray.dir_x = vec_directions[i, 0]
             ray_hit.ray.dir_y = vec_directions[i, 1]
             ray_hit.ray.dir_z = vec_directions[i, 2]
