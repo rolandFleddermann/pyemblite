@@ -256,8 +256,8 @@ cdef class EmbreeSceneExtended(EmbreeScene):
     @cython.wraparound(False)  # turn off negative index wrapping for entire function
     def shortest_distance(
         self,
-        np.ndarray[np.float32_t, ndim=2] vec_origins,
-        np.ndarray[np.float32_t, ndim=2] vec_directions,
+        np.ndarray[np.float64_t, ndim=2] vec_origins,
+        np.ndarray[np.float64_t, ndim=2] vec_directions,
         float offset=0.0
     ):
         cdef int nv = vec_origins.shape[0]
@@ -295,16 +295,16 @@ cdef class EmbreeSceneExtended(EmbreeScene):
     @cython.wraparound(False)  # turn off negative index wrapping for entire function
     def intersections(
         self,
-        np.ndarray[np.float32_t, ndim=2] vec_origins,
-        np.ndarray[np.float32_t, ndim=2] vec_directions
+        np.ndarray[np.float64_t, ndim=2] vec_origins,
+        np.ndarray[np.float64_t, ndim=2] vec_directions
     ):
         cdef int nv = vec_origins.shape[0]
-        cdef float u, v, f
+        cdef np.float64_t u, v, f
         cdef Triangle t
         cdef Vertex p0, p1, p2
         cdef np.ndarray[np.int32_t, ndim=1] primID = np.empty(nv, dtype="int32")
-        cdef np.ndarray[np.float32_t, ndim=2] normal = np.empty((nv, 3), dtype="float32")
-        cdef np.ndarray[np.float32_t, ndim=2] loc = np.empty((nv, 3), dtype="float32")
+        cdef np.ndarray[np.float64_t, ndim=2] normal = np.empty((nv, 3), dtype="float64")
+        cdef np.ndarray[np.float64_t, ndim=2] loc = np.empty((nv, 3), dtype="float64")
 
         cdef rtcr.RTCIntersectContext ray_ctx
         rtcr.rtcInitIntersectContext( &ray_ctx)
