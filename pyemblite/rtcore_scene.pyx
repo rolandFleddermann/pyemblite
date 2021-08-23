@@ -309,8 +309,8 @@ cdef class EmbreeSceneExtended(object):
     @cython.wraparound(False)  # turn off negative index wrapping for entire function
     def shortest_distance(
         self,
-        np.ndarray[np.float64_t, ndim=2] vec_origins,
-        np.ndarray[np.float64_t, ndim=2] vec_directions,
+        np.ndarray[np.float32_t, ndim=2] vec_origins,
+        np.ndarray[np.float32_t, ndim=2] vec_directions,
         float offset=0.0
     ):
         cdef int nv = vec_origins.shape[0]
@@ -348,8 +348,8 @@ cdef class EmbreeSceneExtended(object):
     @cython.wraparound(False)  # turn off negative index wrapping for entire function
     def intersections(
         self,
-        np.ndarray[np.float64_t, ndim=2] vec_origins,
-        np.ndarray[np.float64_t, ndim=2] vec_directions
+        np.ndarray[np.float32_t, ndim=2] vec_origins,
+        np.ndarray[np.float32_t, ndim=2] vec_directions
     ):
         cdef int nv = vec_origins.shape[0]
         cdef np.float64_t u, v, f
