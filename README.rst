@@ -61,7 +61,7 @@ Installation
 
 Install from latest github source:
 
-   ``pip install --user git+git://github.com/AppliedMathematicsANU/pyemblite.git#egg=pyemblite``
+   ``python -m pip install --no-deps --no-build-isolation --user git+git://github.com/AppliedMathematicsANU/pyemblite.git#egg=pyemblite``
 
 
 Requirements
